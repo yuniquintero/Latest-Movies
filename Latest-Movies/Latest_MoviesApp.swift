@@ -11,7 +11,11 @@ import SwiftUI
 struct Latest_MoviesApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            let service = MovieService(apiClient: APIClient())
+            MovieListView(
+                listViewModel: MovieListViewModel(service: service),
+                searchViewModel: MovieSearchViewModel(service: service)
+            )
         }
     }
 }
