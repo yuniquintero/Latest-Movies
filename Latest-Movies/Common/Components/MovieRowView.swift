@@ -29,6 +29,8 @@ struct MovieRowView: View {
                     .lineLimit(3)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(movie.title))
     }
 
     private var poster: some View {
@@ -37,7 +39,17 @@ struct MovieRowView: View {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .success(let image):
-                        image.resizable().scaledToFill()
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .accessibilityLabel(
+                                Text(
+                                    NSLocalizedString(
+                                        "movie_poster_accessibility_label",
+                                        comment: ""
+                                    )
+                                )
+                            )
                     default:
                         Color.gray.opacity(0.1)
                     }

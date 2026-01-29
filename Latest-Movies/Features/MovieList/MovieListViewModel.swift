@@ -9,9 +9,17 @@ import Foundation
 
 @MainActor
 final class MovieListViewModel: ObservableObject {
-    @Published private(set) var movies: [Movie] = []
-    @Published private(set) var isLoading = false
-    @Published private(set) var errorMessage: String?
+    struct State {
+        var movies: [Movie] = []
+        var isLoading: Bool = false
+        var errorMessage: String?
+    }
+
+    @Published private(set) var state = State()
+
+    var movies: [Movie] { state.movies }
+    var isLoading: Bool { state.isLoading }
+    var errorMessage: String? { state.errorMessage }
 
     let service: MovieServiceProtocol
     private var page = 1
@@ -45,19 +53,23 @@ final class MovieListViewModel: ObservableObject {
     }
 
     func loadNextPageAsync() async {
-        guard !isLoading, page <= totalPages else { return }
-        isLoading = true
-        errorMessage = nil
+        guard !state.isLoading, page <= totalPages else { return }
+        state.isLoading = true
+        state.errorMessage = nil
 
         do {
             let response = try await service.getNowPlaying(page: page)
-            movies.append(contentsOf: response.results)
+            state.movies.append(contentsOf: response.movies)
             page += 1
             totalPages = response.totalPages
-            isLoading = false
+            state.isLoading = false
         } catch {
-            errorMessage = "Could not load movies. \(error.localizedDescription)"
-            isLoading = false
+            let format = NSLocalizedString(
+                "could_not_load_movies_with_error",
+                comment: ""
+            )
+            state.errorMessage = String(format: format, error.localizedDescription)
+            state.isLoading = false
         }
     }
 }

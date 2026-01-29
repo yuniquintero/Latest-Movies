@@ -10,29 +10,32 @@ import SwiftUI
 struct MovieListView: View {
     @ObservedObject var listViewModel: MovieListViewModel
     @ObservedObject var searchViewModel: MovieSearchViewModel
-    @State private var navigationPath = NavigationPath()
+    let onSelectMovie: (Movie) -> Void
 
-    init(listViewModel: MovieListViewModel, searchViewModel: MovieSearchViewModel) {
+    init(
+        listViewModel: MovieListViewModel,
+        searchViewModel: MovieSearchViewModel,
+        onSelectMovie: @escaping (Movie) -> Void
+    ) {
         self.listViewModel = listViewModel
         self.searchViewModel = searchViewModel
+        self.onSelectMovie = onSelectMovie
     }
 
     var body: some View {
         let trimmedQuery = searchViewModel.query.trimmingCharacters(in: .whitespacesAndNewlines)
-        NavigationStack(path: $navigationPath) {
-            Group {
-                if !trimmedQuery.isEmpty {
-                    MovieSearchResultsView(viewModel: searchViewModel)
-                } else {
-                    movieList
-                }
-            }
-            .navigationTitle("Latest Movies")
-            .navigationDestination(for: Movie.self) { movie in
-                MovieDetailView(viewModel: MovieDetailViewModel(service: listViewModel.service, movieId: movie.id))
+        Group {
+            if !trimmedQuery.isEmpty {
+                MovieSearchResultsView(viewModel: searchViewModel, onSelectMovie: onSelectMovie)
+            } else {
+                movieList
             }
         }
-        .searchable(text: $searchViewModel.query, prompt: "Search movies")
+        .navigationTitle(Text(NSLocalizedString("latest_movies_title", comment: "")))
+        .searchable(
+            text: $searchViewModel.query,
+            prompt: Text(NSLocalizedString("search_movies_prompt", comment: ""))
+        )
         .onChange(of: searchViewModel.query) { _, _ in
             searchViewModel.handleQueryChange()
         }
@@ -44,11 +47,14 @@ struct MovieListView: View {
     private var movieList: some View {
         List {
             ForEach(listViewModel.movies) { movie in
-                NavigationLink(value: movie) {
+                Button {
+                    onSelectMovie(movie)
+                } label: {
                     MovieRowView(movie: movie, service: listViewModel.service)
-                        .onAppear {
-                            listViewModel.loadNextPageIfNeeded(currentMovie: movie)
-                        }
+                }
+                .buttonStyle(.plain)
+                .onAppear {
+                    listViewModel.loadNextPageIfNeeded(currentMovie: movie)
                 }
             }
 
@@ -71,9 +77,13 @@ struct MovieListView: View {
     @ViewBuilder
     private var contentOverlay: some View {
         if listViewModel.isLoading && listViewModel.movies.isEmpty {
-            ProgressView("Loading movies...")
+            ProgressView(NSLocalizedString("loading_movies", comment: ""))
         } else if let errorMessage = listViewModel.errorMessage {
-            ContentUnavailableView("Could not load movies", systemImage: "film", description: Text(errorMessage))
+            ContentUnavailableView(
+                NSLocalizedString("could_not_load_movies_title", comment: ""),
+                systemImage: "film",
+                description: Text(errorMessage)
+            )
         }
     }
 }

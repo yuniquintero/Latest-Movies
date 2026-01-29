@@ -9,15 +9,15 @@ import Foundation
 
 struct MockMovieService: MovieServiceProtocol {
     let apiClient: APIClientProtocol
-    var nowPlayingResult: Result<MovieListResponse, Error> = .success(MovieListResponse(page: 1, results: [], totalPages: 1))
+    var nowPlayingResult: Result<MoviePage, Error> = .success(MoviePage(page: 1, movies: [], totalPages: 1))
     var detailResult: Result<MovieDetail, Error> = .failure(NetworkError.invalidResponse)
-    var searchResult: Result<MovieListResponse, Error> = .success(MovieListResponse(page: 1, results: [], totalPages: 1))
+    var searchResult: Result<MoviePage, Error> = .success(MoviePage(page: 1, movies: [], totalPages: 1))
 
     init(
         apiClient: APIClientProtocol,
-        nowPlayingResult: Result<MovieListResponse, Error> = .success(MovieListResponse(page: 1, results: [], totalPages: 1)),
+        nowPlayingResult: Result<MoviePage, Error> = .success(MoviePage(page: 1, movies: [], totalPages: 1)),
         detailResult: Result<MovieDetail, Error> = .failure(NetworkError.invalidResponse),
-        searchResult: Result<MovieListResponse, Error> = .success(MovieListResponse(page: 1, results: [], totalPages: 1))
+        searchResult: Result<MoviePage, Error> = .success(MoviePage(page: 1, movies: [], totalPages: 1))
     ) {
         self.apiClient = apiClient
         self.nowPlayingResult = nowPlayingResult
@@ -25,7 +25,7 @@ struct MockMovieService: MovieServiceProtocol {
         self.searchResult = searchResult
     }
 
-    func getNowPlaying(page: Int) async throws -> MovieListResponse {
+    func getNowPlaying(page: Int) async throws -> MoviePage {
         switch nowPlayingResult {
         case .success(let response):
             return response
@@ -43,7 +43,7 @@ struct MockMovieService: MovieServiceProtocol {
         }
     }
 
-    func searchMovies(query: String, page: Int) async throws -> MovieListResponse {
+    func searchMovies(query: String, page: Int) async throws -> MoviePage {
         switch searchResult {
         case .success(let response):
             return response

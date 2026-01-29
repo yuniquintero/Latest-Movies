@@ -15,7 +15,7 @@ struct MovieDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 headerImage
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(viewModel.movie?.title ?? "Loading...")
+                    Text(viewModel.movie?.title ?? "")
                         .font(.title2.bold())
                 }
                 .padding(.horizontal)
@@ -30,7 +30,10 @@ struct MovieDetailView: View {
             }
         }
         .overlay(detailOverlay)
-        .navigationTitle(viewModel.movie?.title ?? "Movie")
+        .navigationTitle(
+            viewModel.movie?.title
+            ?? NSLocalizedString("movie_generic_title", comment: "")
+        )
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             viewModel.load()
@@ -44,13 +47,21 @@ struct MovieDetailView: View {
             AsyncImage(url: url) { phase in
                 switch phase {
                 case .success(let image):
-                    image.resizable().scaledToFill()
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .accessibilityLabel(
+                            Text(viewModel.movie?.backdropPath != nil
+                                 ? NSLocalizedString("movie_backdrop_accessibility_label", comment: "")
+                                 : NSLocalizedString("movie_poster_accessibility_label", comment: ""))
+                        )
                 default:
                     Color.gray.opacity(0.1)
                 }
             }
             .frame(height: 220)
             .clipped()
+            .accessibilityHidden(viewModel.movie == nil)
         }
     }
 
@@ -84,9 +95,13 @@ struct MovieDetailView: View {
     @ViewBuilder
     private var detailOverlay: some View {
         if viewModel.isLoading {
-            ProgressView("Loading details...")
+            ProgressView(NSLocalizedString("loading_details", comment: ""))
         } else if let errorMessage = viewModel.errorMessage {
-            ContentUnavailableView("Could not load details", systemImage: "film", description: Text(errorMessage))
+            ContentUnavailableView(
+                NSLocalizedString("could_not_load_details_title", comment: ""),
+                systemImage: "film",
+                description: Text(errorMessage)
+            )
         }
     }
 

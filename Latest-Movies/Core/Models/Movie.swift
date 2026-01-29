@@ -7,9 +7,11 @@
 
 import Foundation
 
-struct MovieListResponse: Decodable {
+// MARK: - Data transfer objects (DTOs) used only in the data layer
+
+struct MovieListResponseDTO: Decodable {
     let page: Int
-    let results: [Movie]
+    let results: [MovieDTO]
     let totalPages: Int
 
     private enum CodingKeys: String, CodingKey {
@@ -19,7 +21,7 @@ struct MovieListResponse: Decodable {
     }
 }
 
-struct Movie: Identifiable, Decodable, Hashable {
+struct MovieDTO: Decodable {
     let id: Int
     let title: String
     let overview: String
@@ -37,4 +39,52 @@ struct Movie: Identifiable, Decodable, Hashable {
         case releaseDate = "release_date"
         case voteAverage = "vote_average"
     }
+}
+
+// MARK: - Domain models used by ViewModels and Views
+
+struct Movie: Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let overview: String
+    let posterPath: String?
+    let backdropPath: String?
+    let releaseDate: String?
+    let voteAverage: Double
+
+    init(
+        id: Int,
+        title: String,
+        overview: String,
+        posterPath: String?,
+        backdropPath: String?,
+        releaseDate: String?,
+        voteAverage: Double
+    ) {
+        self.id = id
+        self.title = title
+        self.overview = overview
+        self.posterPath = posterPath
+        self.backdropPath = backdropPath
+        self.releaseDate = releaseDate
+        self.voteAverage = voteAverage
+    }
+
+    init(from dto: MovieDTO) {
+        self.init(
+            id: dto.id,
+            title: dto.title,
+            overview: dto.overview,
+            posterPath: dto.posterPath,
+            backdropPath: dto.backdropPath,
+            releaseDate: dto.releaseDate,
+            voteAverage: dto.voteAverage
+        )
+    }
+}
+
+struct MoviePage {
+    let page: Int
+    let movies: [Movie]
+    let totalPages: Int
 }

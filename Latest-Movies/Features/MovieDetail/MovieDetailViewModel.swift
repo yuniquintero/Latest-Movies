@@ -32,7 +32,11 @@ final class MovieDetailViewModel: ObservableObject {
                 movie = detail
                 isLoading = false
             } catch {
-                errorMessage = "Could not load movie details. \(error.localizedDescription)"
+                let format = NSLocalizedString(
+                    "could_not_load_movie_details_with_error",
+                    comment: ""
+                )
+                errorMessage = String(format: format, error.localizedDescription)
                 isLoading = false
             }
         }

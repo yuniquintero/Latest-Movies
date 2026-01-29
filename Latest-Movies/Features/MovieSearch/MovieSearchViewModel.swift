@@ -41,14 +41,18 @@ final class MovieSearchViewModel: ObservableObject {
         Task { @MainActor in
             do {
                 let response = try await service.searchMovies(query: trimmed, page: 1)
-                results = response.results.sorted { lhs, rhs in
+                results = response.movies.sorted { lhs, rhs in
                     let leftDate = lhs.releaseDate ?? ""
                     let rightDate = rhs.releaseDate ?? ""
                     return leftDate > rightDate
                 }
                 isLoading = false
             } catch {
-                errorMessage = "Could not search movies. \(error.localizedDescription)"
+                let format = NSLocalizedString(
+                    "could_not_search_movies_with_error",
+                    comment: ""
+                )
+                errorMessage = String(format: format, error.localizedDescription)
                 isLoading = false
             }
         }

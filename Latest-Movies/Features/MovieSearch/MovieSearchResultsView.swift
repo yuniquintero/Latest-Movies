@@ -9,13 +9,25 @@ import SwiftUI
 
 struct MovieSearchResultsView: View {
     @ObservedObject var viewModel: MovieSearchViewModel
+    let onSelectMovie: (Movie) -> Void
 
     var body: some View {
         List {
             ForEach(viewModel.results) { movie in
-                NavigationLink(value: movie) {
+                Button {
+                    onSelectMovie(movie)
+                } label: {
                     MovieRowView(movie: movie, service: viewModel.service)
+                        .accessibilityHint(
+                            Text(
+                                NSLocalizedString(
+                                    "opens_movie_details_accessibility_hint",
+                                    comment: ""
+                                )
+                            )
+                        )
                 }
+                .buttonStyle(.plain)
             }
         }
         .listStyle(.plain)
@@ -25,11 +37,24 @@ struct MovieSearchResultsView: View {
     @ViewBuilder
     private var resultsOverlay: some View {
         if viewModel.isLoading {
-            ProgressView("Searching...")
+            ProgressView(NSLocalizedString("searching", comment: ""))
         } else if let errorMessage = viewModel.errorMessage {
-            ContentUnavailableView("Search failed", systemImage: "magnifyingglass", description: Text(errorMessage))
+            ContentUnavailableView(
+                NSLocalizedString("search_failed_title", comment: ""),
+                systemImage: "magnifyingglass",
+                description: Text(errorMessage)
+            )
         } else if viewModel.results.isEmpty {
-            ContentUnavailableView("No results", systemImage: "magnifyingglass", description: Text("Try another title."))
+            ContentUnavailableView(
+                NSLocalizedString("no_results_title", comment: ""),
+                systemImage: "magnifyingglass",
+                description: Text(
+                    NSLocalizedString(
+                        "try_another_title_message",
+                        comment: ""
+                    )
+                )
+            )
         }
     }
 }
